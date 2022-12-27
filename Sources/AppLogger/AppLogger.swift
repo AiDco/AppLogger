@@ -18,7 +18,7 @@ final public class AppLogger {
         case success = "🟢"
         case warning = "⚠️"
         case error = "🚫"
-        case exeption = "❗️"
+        case exception = "❗️"
     }
 
     private init() {}
@@ -33,7 +33,7 @@ final public class AppLogger {
 
         /// Print debug information in debug scheme
         /// - Parameters:
-        ///   - level: enum debug lelvel
+        ///   - level: enum debug level
         ///   - message: any messages
         ///   - filePath: in what file
         ///   - function: in wich function
@@ -42,21 +42,34 @@ final public class AppLogger {
                            _ message: Any...,
                            filePath: String = #file,
                            function: String = #function,
-                           line: Int = #line) {
+                           line: Int = #line,
+                           toFile: Bool = false
+    ) {
         for message in message {
-            customPrint(message, level: level, filePath: filePath, function: function, line: line)
+            customPrint(message, level: level, filePath: filePath, function: function, line: line, toFile: toFile)
         }
     }
 
-    private static func customPrint(_ message: Any, level: Level, filePath: String, function: String, line: Int, toFile: Bool = false) {
+    private static func customPrint(_ message: Any,
+                                    level: Level,
+                                    filePath: String,
+                                    function: String,
+                                    line: Int,
+                                    toFile: Bool = false) {
         guard displayLog else { return }
 
-        let fileName = filePath.components(separatedBy: "/").last?.components(separatedBy: ".").first ?? "unkonwn_file_name"
+        let fileName = filePath.components(separatedBy: "/").last?.components(separatedBy: ".").first ?? "unknown_file_name"
         let stringToPrint = "\(Date()) \(level.rawValue) \(fileName).swift => \(function) => at line \(line) => \(message)"
         Debugger.run({
             print(stringToPrint)
+            if toFile {
+                FileLog.log.write("\n" + stringToPrint)
+            }
         }, releaseHandler: {
             print("RELEASE SCHEME: \(stringToPrint)")
+            if toFile {
+                FileLog.log.write("\n" + "RELEASE SCHEME: \(stringToPrint)")
+            }
         })
     }
 }
